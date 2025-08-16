@@ -1,12 +1,11 @@
 import Link from 'next/link'
 import { supabaseServer } from '@/lib/supabaseServer'
 
-export default async function Page() {
-  const { data: venues } = await supabaseServer.from('venues').select('id,name,address').order('id', { ascending: true })
+export default async function VenuesPage() {
+  const { data: venues } = await supabaseServer.from('venues').select('id,name,address')
   return (
-    <main className="space-y-6">
-      <h1 className="text-2xl font-bold">จองคอร์ท & จัดก๊วน</h1>
-      <p className="text-sm text-neutral-600">เริ่มจากเลือกสนามด้านล่าง หรือไปที่หน้าก๊วน</p>
+    <main className="space-y-4">
+      <h1 className="text-xl font-bold">สนามทั้งหมด</h1>
       <div className="grid md:grid-cols-2 gap-4">
         {venues?.map(v => (
           <Link key={v.id} href={`/venues/${v.id}`} className="block rounded-xl border p-4 hover:bg-neutral-50">
