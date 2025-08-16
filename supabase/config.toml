@@ -1,0 +1,4 @@
+[functions.cleanup-holds]
+verify_jwt = false
+[functions.cleanup-holds.cron]
+schedule = "* * * * *"  # ทุก 1 นาที
