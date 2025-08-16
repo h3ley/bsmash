@@ -1,18 +1,24 @@
 // apps/web/app/me/bookings/page.tsx
-import { supabaseServer } from '@/lib/supabaseServer'
+import { cookies } from 'next/headers'
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 
 export default async function MyBookings() {
-  const { data: rows, error } = await supabaseServer
+  const supabase = createServerComponentClient({ cookies })
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return <main className="p-4">กรุณาเข้าสู่ระบบ</main>
+
+  const { data: rows, error } = await supabase
     .from('bookings')
     .select('id,status,payment_status,created_at, slots(start_at,end_at)')
+    .eq('user_id', user.id)
     .order('id', { ascending: false })
     .limit(20)
 
-  if (error) return <main className="p-4"><pre>{error.message}</pre></main>
+  if (error) return <main className="p-4"><pre className="text-xs">{error.message}</pre></main>
 
   return (
     <main className="space-y-4">
-      <h1 className="text-xl font-bold">การจองล่าสุด</h1>
+      <h1 className="text-xl font-bold">การจองของฉัน</h1>
       <table className="w-full text-sm">
         <thead><tr><th className="text-left">เลขที่</th><th>เวลา</th><th>สถานะ</th></tr></thead>
         <tbody>
