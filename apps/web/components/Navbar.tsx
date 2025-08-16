@@ -1,7 +1,7 @@
-"use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { cookies } from 'next/headers'
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import SignOutButton from './SignOutButton'
 
 const items = [
   { href: "/", label: "bsmash" },
@@ -11,24 +11,39 @@ const items = [
   { href: '/me/groups', label: 'ก๊วนของฉัน' }
 ];
 
-export default function Navbar() {
-  const p = usePathname()
-  const router = useRouter()
-
-  const logout = async () => {
-    await fetch('/api/auth/signout', { method: 'POST' })
-    router.refresh()
-  }
+export default async function Navbar() {
+  const supabase = createServerComponentClient({ cookies })
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data: profile } = user
+    ? await supabase.from('profiles').select('display_name, role').eq('user_id', user.id).single()
+    : { data: null }
 
   return (
     <nav className="sticky top-0 z-10 backdrop-blur bg-white/70 border-b">
       <div className="mx-auto max-w-5xl px-4 h-12 flex items-center gap-4">
         {items.map(it => (
-          <Link key={it.href} href={it.href} className={`text-sm px-2 py-1 rounded ${p===it.href? 'bg-black text-white':'hover:bg-neutral-100'}`}>{it.label}</Link>
+          <Link key={it.href} href={it.href}
+            className="text-sm px-2 py-1 rounded hover:bg-neutral-100">
+            {it.label}
+          </Link>
         ))}
+
         <div className="ml-auto flex items-center gap-2">
-          <Link href="/login" className={`text-sm px-2 py-1 rounded ${p==='/login'?'bg-black text-white':'hover:bg-neutral-100'}`}>เข้าสู่ระบบ</Link>
-          <button onClick={logout} className="text-sm px-2 py-1 rounded hover:bg-neutral-100">ออกจากระบบ</button>
+          {user ? (
+            <>
+              <span className="text-sm">
+                👤 {profile?.display_name ?? user.email}
+              </span>
+              <span className="text-xs rounded-full bg-neutral-200 px-2 py-0.5">
+                {profile?.role ?? 'PLAYER'}
+              </span>
+              <SignOutButton />
+            </>
+          ) : (
+            <Link href="/login" className="text-sm px-2 py-1 rounded hover:bg-neutral-100">
+              เข้าสู่ระบบ
+            </Link>
+          )}
         </div>
       </div>
     </nav>

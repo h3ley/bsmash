@@ -3,3 +3,7 @@ node_modules
 out
 .DS_Store
 .env*
+
+# Turborepo local/secret state
+.turbo
+turbo.cookie
